@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'application'
+}
+
+apply from: "${System.getenv("GRADLE_HOME")}/init.d/init.gradle"
+
+group = 'io.github.clouderhem'
+version = '1.0-SNAPSHOT'
+
+mainClassName = 'io.github.clouderhem.jvmtools.Main'
+
+def premainClassName = 'io.github.clouderhem.jvmtools.premain.PremainEntry'
+def agentmainClassName = 'io.github.clouderhem.jvmtools.agentmain.AgentmainEntry'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation files('src/main/resources/lib/tools.jar')
+
+    implementation 'org.javassist:javassist:3.29.2-GA'
+    implementation 'ch.qos.logback:logback-classic:1.3.11'
+    implementation 'org.apache.commons:commons-lang3:3.13.0'
+    implementation 'com.alibaba.fastjson2:fastjson2:2.0.39'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'com.google.guava:guava:32.1.2-jre'
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+
+    from {
+        configurations.compileClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    manifest {
+        attributes 'Main-Class': mainClassName
+        attributes 'Premain-Class': premainClassName
+        attributes 'Agent-Class': agentmainClassName
+
+        attributes 'Class-Path': 'lib/tools.jar'
+        attributes 'Can-Redefine-Classes': true
+        attributes 'Can-Retransform-Classes': true
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    exclude(["META-INF/BC1024KE.DSA", "META-INF/BC1024KE.SF", "META-INF/BC2048KE.DSA", "META-INF/BC2048KE.SF"])
+}
