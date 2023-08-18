@@ -1,7 +1,6 @@
-package io.github.clouderhem.jvmtools.agentmain.common;
+package io.github.clouderhem.jvmtools.agentmain.transformer;
 
 import com.google.common.collect.Maps;
-import io.github.clouderhem.jvmtools.agentmain.strategy.impl.MethodParameterLogStrategyImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +16,7 @@ public class ClassRestorationTransformer implements ClassFileTransformer {
 
     public static final Map<String, byte[]> CLASS_BYTES_MAP = Maps.newHashMap();
 
-    private static final Logger log = LoggerFactory.getLogger(MethodParameterLogStrategyImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(ClassRestorationTransformer.class);
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
@@ -29,7 +28,7 @@ public class ClassRestorationTransformer implements ClassFileTransformer {
             return classfileBuffer;
         }
 
-        log.info("restore class file, className={}", classNameDot);
+        log.info("Restored classFile[{}]", classNameDot);
 
         byte[] bytes = CLASS_BYTES_MAP.get(classNameDot);
         CLASS_BYTES_MAP.remove(classNameDot);

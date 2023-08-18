@@ -9,7 +9,7 @@ apply from: "${System.getenv("GRADLE_HOME")}/init.d/init.gradle"
 group = 'io.github.clouderhem'
 version = '1.0-SNAPSHOT'
 
-mainClassName = 'io.github.clouderhem.jvmtools.Main'
+mainClassName = 'io.github.clouderhem.jvmtools.Startup'
 
 def premainClassName = 'io.github.clouderhem.jvmtools.premain.PremainEntry'
 def agentmainClassName = 'io.github.clouderhem.jvmtools.agentmain.AgentmainEntry'
@@ -28,6 +28,7 @@ dependencies {
     implementation 'com.alibaba.fastjson2:fastjson2:2.0.39'
     implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'com.google.guava:guava:32.1.2-jre'
+    implementation 'io.netty:netty-all:4.1.86.Final'
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'

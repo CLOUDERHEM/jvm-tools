@@ -9,6 +9,7 @@ import java.lang.instrument.Instrumentation;
  * @author Aaron Yeung
  * @date 8/17/2023 1:20 PM
  */
+@Deprecated
 public class PremainEntry {
     private static final Logger log = LoggerFactory.getLogger(PremainEntry.class);
 

@@ -6,7 +6,7 @@ import java.lang.instrument.Instrumentation;
  * @author Aaron Yeung
  * @date 8/17/2023 3:04 PM
  */
-public interface AgentMainStrategy {
+public interface CmdProcessStrategy {
 
     boolean canApply(String args);
 

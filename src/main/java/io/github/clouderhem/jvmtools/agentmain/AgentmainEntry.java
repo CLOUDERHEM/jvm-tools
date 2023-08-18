@@ -1,12 +1,10 @@
 package io.github.clouderhem.jvmtools.agentmain;
 
-import io.github.clouderhem.jvmtools.agentmain.strategy.AgentMainStrategy;
-import io.github.clouderhem.jvmtools.agentmain.strategy.AgentMainStrategyFactory;
+import io.github.clouderhem.jvmtools.net.starter.ServerBootstrapStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.Instrumentation;
-import java.util.Optional;
 
 /**
  * @author Aaron Yeung
@@ -17,15 +15,9 @@ public class AgentmainEntry {
     private static final Logger log = LoggerFactory.getLogger(AgentmainEntry.class);
 
     public static void agentmain(String args, Instrumentation inst) {
-        log.info("Invoke agent main, args:{}", args);
+        log.info("Agentmain invoked, args:{}", args);
 
-        Optional<AgentMainStrategy> strategy = AgentMainStrategyFactory.findStrategy(args);
-
-        if (!strategy.isPresent()) {
-            log.error("{} is not support", args);
-            return;
-        }
-
-        strategy.get().process(args, inst);
+        new ServerBootstrapStarter(inst).start();
     }
 }
+
