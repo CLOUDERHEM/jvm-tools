@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Aaron Yeung
@@ -24,11 +25,12 @@ public class ClassRestorationTransformer implements ClassFileTransformer {
 
         // class not match
         String classNameDot = className.replace("/", ".");
-        if (!CLASS_BYTES_MAP.containsKey(classNameDot)) {
+        if (!CLASS_BYTES_MAP.containsKey(classNameDot)
+                || Objects.isNull(CLASS_BYTES_MAP.get(classNameDot))) {
             return classfileBuffer;
         }
 
-        log.info("Restored classFile[{}]", classNameDot);
+        log.info("Restored classFile, className:{}", classNameDot);
 
         byte[] bytes = CLASS_BYTES_MAP.get(classNameDot);
         CLASS_BYTES_MAP.remove(classNameDot);

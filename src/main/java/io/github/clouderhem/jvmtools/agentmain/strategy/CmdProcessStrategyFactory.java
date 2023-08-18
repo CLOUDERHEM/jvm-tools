@@ -1,6 +1,7 @@
 package io.github.clouderhem.jvmtools.agentmain.strategy;
 
 import io.github.clouderhem.jvmtools.agentmain.strategy.impl.ClassRestorationStrategyImpl;
+import io.github.clouderhem.jvmtools.agentmain.strategy.impl.ClassHotSwapStrategyImpl;
 import io.github.clouderhem.jvmtools.agentmain.strategy.impl.MethodParameterLogStrategyImpl;
 import io.github.clouderhem.jvmtools.agentmain.strategy.impl.ShutdownStrategyImpl;
 
@@ -20,6 +21,7 @@ public class CmdProcessStrategyFactory {
         AGENT_MAIN_STRATEGY_LIST.add(new ClassRestorationStrategyImpl());
         AGENT_MAIN_STRATEGY_LIST.add(new MethodParameterLogStrategyImpl());
         AGENT_MAIN_STRATEGY_LIST.add(new ShutdownStrategyImpl());
+        AGENT_MAIN_STRATEGY_LIST.add(new ClassHotSwapStrategyImpl());
     }
 
     public static Optional<CmdProcessStrategy> findStrategy(String args) {

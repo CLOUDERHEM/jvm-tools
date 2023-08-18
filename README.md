@@ -27,3 +27,7 @@
 * 关闭attach时候启动的`netty`服务端, 客户端也同时关闭
 * 指令: `shutdown`
 
+### 类热替换
+
+* 通过新的字节码url地址, 热替换类文件
+* 指令`hotswapclass <className> <classFileUrl>`
