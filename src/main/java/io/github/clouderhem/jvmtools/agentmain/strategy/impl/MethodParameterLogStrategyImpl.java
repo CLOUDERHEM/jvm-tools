@@ -1,6 +1,9 @@
 package io.github.clouderhem.jvmtools.agentmain.strategy.impl;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import io.github.clouderhem.jvmtools.agentmain.common.ClassRestorationTransformer;
+import io.github.clouderhem.jvmtools.agentmain.common.ClassStore;
 import io.github.clouderhem.jvmtools.agentmain.strategy.AgentMainStrategy;
 import javassist.*;
 import javassist.bytecode.LocalVariableAttribute;
@@ -17,13 +20,18 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static io.github.clouderhem.jvmtools.agentmain.strategy.impl.MethodParameterLogStrategyImpl.CLASS_BYTE_BACKUP;
 
 /**
  * @author Aaron Yeung
  * @date 8/17/2023 3:12 PM
  */
 public class MethodParameterLogStrategyImpl implements AgentMainStrategy {
+
+    public static final Map<String, byte[]> CLASS_BYTE_BACKUP = Maps.newHashMap();
 
     private static final Logger log = LoggerFactory.getLogger(MethodParameterLogStrategyImpl.class);
 
@@ -40,14 +48,15 @@ public class MethodParameterLogStrategyImpl implements AgentMainStrategy {
     @Override
     public void process(String args, Instrumentation instrumentation) {
         String[] argList = args.split(" ");
-        MethodParameterLogTransformer transformer =
+        MethodParameterLogTransformer methodParameterLogTransformer =
                 new MethodParameterLogTransformer(argList[1].trim(), argList[2].trim());
 
         try {
-            instrumentation.addTransformer(transformer, true);
+            instrumentation.addTransformer(methodParameterLogTransformer, true);
             instrumentation.retransformClasses(Class.forName(argList[1].trim()));
         } catch (ClassNotFoundException | UnmodifiableClassException e) {
             log.error("", e);
+            return;
         }
 
         try {
@@ -56,17 +65,26 @@ public class MethodParameterLogStrategyImpl implements AgentMainStrategy {
             log.error("", e);
         }
 
-        instrumentation.removeTransformer(transformer);
-
+        ClassRestorationTransformer classRestorationTransformer = new ClassRestorationTransformer();
+        try {
+            instrumentation.removeTransformer(methodParameterLogTransformer);
+            instrumentation.addTransformer(classRestorationTransformer, true);
+            // 还原修改过的class
+            instrumentation.retransformClasses(Class.forName(argList[1].trim()));
+        } catch (UnmodifiableClassException | ClassNotFoundException e) {
+            log.error("", e);
+        } finally {
+            instrumentation.removeTransformer(classRestorationTransformer);
+        }
     }
 }
 
-class MethodParameterLogTransformer implements ClassFileTransformer {
+class MethodParameterLogTransformer implements ClassFileTransformer, ClassStore {
 
     private static final Logger log = LoggerFactory.getLogger(MethodParameterLogTransformer.class);
 
     private static final List<String> PACKAGE_NAME_LIST = Lists.newArrayList("java.util",
-            "com.alibaba.fastjson2");
+            "com" + ".alibaba.fastjson2");
 
     private final String targetClassName;
 
@@ -86,12 +104,16 @@ class MethodParameterLogTransformer implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
 
+
         // class not match
         String classNameDot = className.replace("/", ".");
         if (!targetClassName.equals(classNameDot)) {
             return classfileBuffer;
         }
 
+        log.info("transforming class file, className={}", classNameDot);
+
+        storeClassFile(classNameDot, classfileBuffer);
         try {
             CtClass ctClass = classPool.get(classBeingRedefined.getName());
             CtMethod ctMethod = ctClass.getDeclaredMethod(methodName);
@@ -115,6 +137,11 @@ class MethodParameterLogTransformer implements ClassFileTransformer {
         return classfileBuffer;
     }
 
+    @Override
+    public void storeClassFile(String className, byte[] classfileBuffer) {
+        CLASS_BYTE_BACKUP.put(className, classfileBuffer);
+    }
+
     private String generateLogLineCode(String methodName, List<String> paramNameList) {
         String format = String.format("new Date() + \" [enhance] INFO \" + this.getClass()" +
                 ".getName() + \".%s | \" + %s", methodName, generateParamValue(paramNameList));
@@ -123,9 +150,7 @@ class MethodParameterLogTransformer implements ClassFileTransformer {
     }
 
     private String generateParamValue(List<String> paramNameList) {
-        return paramNameList.stream()
-                .map(name -> String.format(" \" %s:\" + JSON.toJSONString" + "(%s)", name, name))
-                .collect(Collectors.joining(" + "));
+        return paramNameList.stream().map(name -> String.format(" \" %s:\" + JSON.toJSONString" + "(%s)", name, name)).collect(Collectors.joining(" + "));
     }
 
     private List<String> getParamNameList(CtMethod ctMethod) {
