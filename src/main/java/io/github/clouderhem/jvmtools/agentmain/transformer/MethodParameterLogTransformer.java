@@ -8,7 +8,6 @@ import javassist.bytecode.MethodInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
@@ -61,20 +60,14 @@ public class MethodParameterLogTransformer implements ClassFileTransformer, Clas
 
             List<String> paramNameList = getParamNameList(ctMethod);
             log.info("Transforming classFile, className:{}", classNameDot);
-
-            try {
-                ctMethod.insertBefore(generateLogLineCode(methodName, paramNameList));
-            } catch (CannotCompileException e) {
-                log.error("", e);
-                return classfileBuffer;
-            }
+            ctMethod.insertAfter(generateParametersLogLineCode(methodName, paramNameList));
 
             ctClass.detach();
 
             return ctClass.toBytecode();
         } catch (NotFoundException e) {
             log.error("can not find the class[{}] or method[{}]", classNameDot, methodName);
-        } catch (IOException | CannotCompileException e) {
+        } catch (Exception e) {
             log.error("", e);
         }
 
@@ -88,15 +81,20 @@ public class MethodParameterLogTransformer implements ClassFileTransformer, Clas
         }
     }
 
-    private String generateLogLineCode(String methodName, List<String> paramNameList) {
-        String format = String.format("new Date() + \" [enhance] INFO \" + this.getClass()" +
-                ".getName() + \".%s - \" + %s", methodName, generateParamValue(paramNameList));
-
-        return String.format("System.out.println(%s);", format);
+    private String generateParametersLogLineCode(String methodName, List<String> paramNameList) {
+        return generateLogLineCode("Parameters Log", methodName, paramNameList);
     }
 
-    private String generateParamValue(List<String> paramNameList) {
-        return paramNameList.stream().map(name -> String.format(" \" %s:\" + JSON.toJSONString" + "(%s)", name, name)).collect(Collectors.joining(" + "));
+    private String generateLogLineCode(String logDesc, String methodName,
+                                       List<String> valueNameList) {
+
+        String value = valueNameList.stream().map(name -> String.format(" \" %s:\" + JSON" +
+                ".toJSONString" + "(%s)", name, name)).collect(Collectors.joining(" + "));
+
+        String logLineCode = String.format("new Date() + \" [%s] INFO \" + this.getClass()" +
+                ".getName() + \".%s - \" + %s", logDesc, methodName, value);
+
+        return String.format("System.out.println(%s);", logLineCode);
     }
 
     private List<String> getParamNameList(CtMethod ctMethod) {
