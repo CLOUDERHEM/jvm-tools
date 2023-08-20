@@ -6,8 +6,10 @@ plugins {
 
 apply from: "${System.getenv("GRADLE_HOME")}/init.d/init.gradle"
 
+def javaMajorVersion = Integer.valueOf(JavaVersion.current().majorVersion)
+
 group = 'io.github.clouderhem'
-version = '1.0-SNAPSHOT'
+version = '1.1-SNAPSHOT-java' + javaMajorVersion
 
 mainClassName = 'io.github.clouderhem.jvmtools.Startup'
 
@@ -20,7 +22,10 @@ repositories {
 }
 
 dependencies {
-    implementation files('src/main/resources/lib/tools.jar')
+
+    if (javaMajorVersion == 8) {
+        implementation files('src/main/resources/lib/tools.jar')
+    }
 
     implementation 'org.javassist:javassist:3.29.2-GA'
     implementation 'ch.qos.logback:logback-classic:1.3.11'
