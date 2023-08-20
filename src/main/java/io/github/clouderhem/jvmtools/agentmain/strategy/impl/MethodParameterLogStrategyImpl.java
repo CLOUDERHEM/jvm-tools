@@ -42,6 +42,8 @@ public class MethodParameterLogStrategyImpl implements CmdProcessStrategy {
             instrumentation.retransformClasses(Class.forName(argList[1].trim()));
         } catch (ClassNotFoundException | UnmodifiableClassException e) {
             log.error("", e);
+        } finally {
+            instrumentation.removeTransformer(methodParameterLogTransformer);
         }
     }
 }
