@@ -2,7 +2,11 @@ package io.github.clouderhem.jvmtools.agentmain.transformer;
 
 import com.google.common.collect.Lists;
 import io.github.clouderhem.jvmtools.agentmain.common.ClassFileStore;
-import javassist.*;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.Modifier;
+import javassist.NotFoundException;
 import javassist.bytecode.LocalVariableAttribute;
 import javassist.bytecode.MethodInfo;
 import org.slf4j.Logger;
