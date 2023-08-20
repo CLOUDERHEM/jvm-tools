@@ -31,3 +31,12 @@
 
 * 通过新的字节码url地址, 热替换类文件
 * 指令`hotswapclass <className> <classFileUrl>`
+
+## 说明
+
+**on jdk1.8**
+
+* `retransformClasses`
+    1. 可以更改方法体、常量池和属性
+    2. 不得添加、删除、重命名字段或方法
+    3. 不得更改方法签名或更改类继承

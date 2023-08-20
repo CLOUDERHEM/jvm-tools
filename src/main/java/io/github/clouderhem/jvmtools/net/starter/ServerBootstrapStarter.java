@@ -2,6 +2,7 @@ package io.github.clouderhem.jvmtools.net.starter;
 
 import io.github.clouderhem.jvmtools.agentmain.common.Constants;
 import io.github.clouderhem.jvmtools.net.NetServer;
+import io.github.clouderhem.jvmtools.net.handler.server.ServerAutoShutdownHandler;
 import io.github.clouderhem.jvmtools.net.handler.server.ServerNetEntry;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -46,11 +47,13 @@ public class ServerBootstrapStarter extends Thread {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) {
-                            socketChannel.pipeline().addLast(new ServerNetEntry(instrumentation));
+                            socketChannel.pipeline()
+                                    .addLast(new ServerAutoShutdownHandler())
+                                    .addLast(new ServerNetEntry(instrumentation));
                         }
                     });
 
-            log.info("Server is listening on :{}", Constants.SERVER_PORT);
+            log.info("Tools server is listening on [{}]", Constants.SERVER_PORT);
 
             ChannelFuture channelFuture = bootstrap.bind(Constants.SERVER_PORT).sync();
             channelFuture.channel().closeFuture().sync();

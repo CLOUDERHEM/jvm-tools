@@ -9,4 +9,6 @@ public final class Constants {
 
     public final static int SERVER_PORT = 8421;
 
+    public final static int MAX_SHUTDOWN_TIMEOUT = 10 * 60;
+
 }
