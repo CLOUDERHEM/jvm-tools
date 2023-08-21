@@ -2,15 +2,15 @@ package io.github.clouderhem.jvmtools.agentmain.strategy.impl;
 
 import io.github.clouderhem.jvmtools.agentmain.strategy.CmdProcessStrategy;
 import io.github.clouderhem.jvmtools.agentmain.transformer.ClassHotSwapTransformer;
+import io.github.clouderhem.jvmtools.common.util.ArgsUtils;
+import io.github.clouderhem.jvmtools.common.util.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Aaron Yeung
@@ -24,24 +24,22 @@ public class ClassHotSwapStrategyImpl implements CmdProcessStrategy {
 
     @Override
     public boolean canApply(String args) {
-        List<String> argList =
-                Arrays.stream(args.split(" ")).filter(StringUtils::isNotBlank).map(String::trim).collect(Collectors.toList());
-
+        List<String> argList = ArgsUtils.buildArgList(args, StringUtils.SPACE);
         return argList.size() == 3 && APPLY_OP.equals(argList.get(0));
     }
 
     @Override
     public void process(String args, Instrumentation instrumentation) {
-        String[] argList = args.split(" ");
-        String className = argList[1];
-        String clazzFileUrl = argList[2];
+        List<String> argList = ArgsUtils.buildArgList(args, StringUtils.SPACE);
+        String className = argList.get(1);
+        String clazzFileUrl = argList.get(2);
 
         ClassHotSwapTransformer classHotSwapTransformer =
                 new ClassHotSwapTransformer(className, clazzFileUrl);
 
         try {
             instrumentation.addTransformer(classHotSwapTransformer, true);
-            instrumentation.retransformClasses(Class.forName(className));
+            instrumentation.retransformClasses(ClassUtils.findClass(className));
         } catch (UnmodifiableClassException | ClassNotFoundException e) {
             log.error("", e);
         } finally {
