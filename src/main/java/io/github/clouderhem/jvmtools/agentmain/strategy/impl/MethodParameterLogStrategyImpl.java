@@ -2,6 +2,7 @@ package io.github.clouderhem.jvmtools.agentmain.strategy.impl;
 
 import io.github.clouderhem.jvmtools.agentmain.strategy.CmdProcessStrategy;
 import io.github.clouderhem.jvmtools.agentmain.transformer.MethodParameterLogTransformer;
+import io.github.clouderhem.jvmtools.common.util.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class MethodParameterLogStrategyImpl implements CmdProcessStrategy {
 
         try {
             instrumentation.addTransformer(methodParameterLogTransformer, true);
-            instrumentation.retransformClasses(Class.forName(argList[1].trim()));
+            instrumentation.retransformClasses(ClassUtils.findClass(argList[1]));
         } catch (ClassNotFoundException | UnmodifiableClassException e) {
             log.error("", e);
         } finally {

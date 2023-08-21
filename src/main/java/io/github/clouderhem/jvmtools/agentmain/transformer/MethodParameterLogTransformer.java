@@ -5,6 +5,7 @@ import io.github.clouderhem.jvmtools.agentmain.common.ClassFileStore;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
+import javassist.LoaderClassPath;
 import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.LocalVariableAttribute;
@@ -50,6 +51,8 @@ public class MethodParameterLogTransformer implements ClassFileTransformer, Clas
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
 
+        preProcessClassPool(loader);
+
         // class not match
         String classNameDot = className.replace("/", ".");
         if (!targetClassName.equals(classNameDot)) {
@@ -69,8 +72,6 @@ public class MethodParameterLogTransformer implements ClassFileTransformer, Clas
             ctClass.detach();
 
             return ctClass.toBytecode();
-        } catch (NotFoundException e) {
-            log.error("can not find the class[{}] or method[{}]", classNameDot, methodName);
         } catch (Exception e) {
             log.error("", e);
         }
@@ -130,6 +131,10 @@ public class MethodParameterLogTransformer implements ClassFileTransformer, Clas
         for (String packageName : PACKAGE_NAME_LIST) {
             classPool.importPackage(packageName);
         }
+    }
+
+    private void preProcessClassPool(ClassLoader classLoader) {
+        ClassPool.getDefault().appendClassPath(new LoaderClassPath(classLoader));
     }
 
 }
