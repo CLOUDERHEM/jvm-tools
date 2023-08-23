@@ -1,7 +1,6 @@
 package io.github.clouderhem.jvmtools.agentmain.transformer;
 
 import com.google.common.collect.Lists;
-import io.github.clouderhem.jvmtools.agentmain.common.ClassFileStore;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -17,16 +16,13 @@ import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static io.github.clouderhem.jvmtools.agentmain.transformer.ClassRestorationTransformer.CLASS_BYTES_MAP;
 
 /**
  * @author Aaron Yeung
  * @date 8/18/2023 4:36 PM
  */
-public class MethodParameterLogTransformer implements ClassFileTransformer, ClassFileStore {
+public class MethodParameterLogTransformer implements ClassFileTransformer {
 
     private static final Logger log = LoggerFactory.getLogger(MethodParameterLogTransformer.class);
 
@@ -59,8 +55,6 @@ public class MethodParameterLogTransformer implements ClassFileTransformer, Clas
             return classfileBuffer;
         }
 
-        storeClassFile(classNameDot, classfileBuffer);
-
         try {
             CtClass ctClass = classPool.get(classBeingRedefined.getName());
             CtMethod ctMethod = ctClass.getDeclaredMethod(methodName);
@@ -77,13 +71,6 @@ public class MethodParameterLogTransformer implements ClassFileTransformer, Clas
         }
 
         return classfileBuffer;
-    }
-
-    @Override
-    public void storeClassFile(String className, byte[] classfileBuffer) {
-        if (!CLASS_BYTES_MAP.containsKey(className) || Objects.isNull(CLASS_BYTES_MAP.get(className))) {
-            CLASS_BYTES_MAP.put(className, classfileBuffer);
-        }
     }
 
     private String generateParametersLogLineCode(String methodName, List<String> paramNameList) {

@@ -2,7 +2,6 @@ package io.github.clouderhem.jvmtools.agentmain.strategy.impl;
 
 import com.google.common.collect.Sets;
 import io.github.clouderhem.jvmtools.agentmain.strategy.CmdProcessStrategy;
-import io.github.clouderhem.jvmtools.agentmain.transformer.ClassRestorationTransformer;
 import io.github.clouderhem.jvmtools.common.util.ArgsUtils;
 import io.github.clouderhem.jvmtools.common.util.InstrumentationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,13 +32,8 @@ public class ClassRestorationStrategyImpl implements CmdProcessStrategy {
         List<String> argList = ArgsUtils.buildArgList(args, StringUtils.SPACE);
         String className = argList.get(1);
 
-        ClassRestorationTransformer classRestorationTransformer = new ClassRestorationTransformer();
-        try {
-            instrumentation.addTransformer(classRestorationTransformer, true);
-            // 还原修改过的class
-            InstrumentationUtils.retransformClasses(instrumentation, Sets.newHashSet(className));
-        } finally {
-            instrumentation.removeTransformer(classRestorationTransformer);
-        }
+        // 此时没有transformer, 默认生成原有的字节码
+        InstrumentationUtils.retransformClasses(instrumentation, Sets.newHashSet(className));
+
     }
 }

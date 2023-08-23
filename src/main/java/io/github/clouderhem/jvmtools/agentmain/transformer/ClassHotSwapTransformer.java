@@ -1,6 +1,5 @@
 package io.github.clouderhem.jvmtools.agentmain.transformer;
 
-import io.github.clouderhem.jvmtools.agentmain.common.ClassFileStore;
 import io.github.clouderhem.jvmtools.common.util.ClassUtils;
 import io.github.clouderhem.jvmtools.common.util.FileUtils;
 import org.slf4j.Logger;
@@ -8,15 +7,12 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
-import java.util.Objects;
-
-import static io.github.clouderhem.jvmtools.agentmain.transformer.ClassRestorationTransformer.CLASS_BYTES_MAP;
 
 /**
  * @author Aaron Yeung
  * @date 8/18/2023 9:17 PM
  */
-public class ClassHotSwapTransformer implements ClassFileTransformer, ClassFileStore {
+public class ClassHotSwapTransformer implements ClassFileTransformer {
 
     private static final Logger log = LoggerFactory.getLogger(ClassHotSwapTransformer.class);
 
@@ -39,8 +35,6 @@ public class ClassHotSwapTransformer implements ClassFileTransformer, ClassFileS
             return classfileBuffer;
         }
 
-        storeClassFile(classNameDot, classfileBuffer);
-
         try {
             byte[] classBytecode = FileUtils.downloadFileFromUrl(classFileUrl);
             postProcessClassFile(classBytecode);
@@ -54,13 +48,6 @@ public class ClassHotSwapTransformer implements ClassFileTransformer, ClassFileS
             return classfileBuffer;
         }
 
-    }
-
-    @Override
-    public void storeClassFile(String className, byte[] classfileBuffer) {
-        if (!CLASS_BYTES_MAP.containsKey(className) || Objects.isNull(CLASS_BYTES_MAP.get(className))) {
-            CLASS_BYTES_MAP.put(className, classfileBuffer);
-        }
     }
 
     private void postProcessClassFile(byte[] classBytecode) {
