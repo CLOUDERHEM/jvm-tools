@@ -1,15 +1,15 @@
 package io.github.clouderhem.jvmtools.agentmain.strategy.impl;
 
+import com.google.common.collect.Sets;
 import io.github.clouderhem.jvmtools.agentmain.strategy.CmdProcessStrategy;
 import io.github.clouderhem.jvmtools.agentmain.transformer.MethodParameterLogTransformer;
 import io.github.clouderhem.jvmtools.common.util.ArgsUtils;
-import io.github.clouderhem.jvmtools.common.util.ClassUtils;
+import io.github.clouderhem.jvmtools.common.util.InstrumentationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.Instrumentation;
-import java.lang.instrument.UnmodifiableClassException;
 import java.util.List;
 
 
@@ -41,9 +41,7 @@ public class MethodParameterLogStrategyImpl implements CmdProcessStrategy {
 
         try {
             instrumentation.addTransformer(methodParameterLogTransformer, true);
-            instrumentation.retransformClasses(ClassUtils.findClass(className));
-        } catch (ClassNotFoundException | UnmodifiableClassException e) {
-            log.error("", e);
+            InstrumentationUtils.retransformClasses(instrumentation, Sets.newHashSet(className));
         } finally {
             instrumentation.removeTransformer(methodParameterLogTransformer);
         }
