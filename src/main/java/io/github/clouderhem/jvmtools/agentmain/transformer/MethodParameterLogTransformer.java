@@ -26,8 +26,8 @@ public class MethodParameterLogTransformer implements ClassFileTransformer {
 
     private static final Logger log = LoggerFactory.getLogger(MethodParameterLogTransformer.class);
 
-    private static final List<String> PACKAGE_NAME_LIST = Lists.newArrayList("java.util",
-            "com" + ".alibaba.fastjson2");
+    private static final List<String> PACKAGE_NAME_LIST = Lists.newArrayList("java.util", "com.alibaba.fastjson2",
+            "io.github.clouderhem.jvmtools.common.log");
 
     private final String targetClassName;
 
@@ -77,16 +77,16 @@ public class MethodParameterLogTransformer implements ClassFileTransformer {
         return generateLogLineCode("Parameters Log", methodName, paramNameList);
     }
 
-    private String generateLogLineCode(String logDesc, String methodName,
-                                       List<String> valueNameList) {
+    private String generateLogLineCode(String logDesc, String methodName, List<String> valueNameList) {
 
-        String value = valueNameList.stream().map(name -> String.format(" \" %s:\" + JSON" +
-                ".toJSONString" + "(%s)", name, name)).collect(Collectors.joining(" + "));
+        String value = valueNameList.stream().map(name -> String.format(" \" %s:\" + JSON" + ".toJSONString" + "(%s)"
+                , name, name)).collect(Collectors.joining(" + "));
 
-        String logLineCode = String.format("new Date() + \" [%s] INFO \" + this.getClass()" +
-                ".getName() + \".%s - \" + %s", logDesc, methodName, value);
+        String logLineCode =
+                String.format("new Date() + \" [%s] INFO \" + this.getClass()" + ".getName() + \".%s - " + "\" + %s",
+                        logDesc, methodName, value);
 
-        return String.format("System.out.println(%s);", logLineCode);
+        return String.format("LogEntry.info(%s);", logLineCode);
     }
 
     private List<String> getParamNameList(CtMethod ctMethod) {
