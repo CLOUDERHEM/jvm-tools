@@ -4,8 +4,6 @@ plugins {
     id 'application'
 }
 
-apply from: "${System.getenv("GRADLE_HOME")}/init.d/init.gradle"
-
 def javaMajorVersion = Integer.valueOf(JavaVersion.current().majorVersion)
 
 group = 'io.github.clouderhem'
